@@ -73,8 +73,7 @@ int main(){
 		inptrerr = 0;
 		outptrerr = 0;
 		pipeptrerr = 0;
-		/*Shouldnt be here, just testing*/
-		//inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
+
 		int infiledes = NULL;
 		int outfiledes = NULL;
 		int nullinput = NULL;
@@ -355,7 +354,7 @@ void parse(){
 		if ( (strcmp( word[i], "<")) == 0 ){
 			/*If inptr not null, we've already seen one < this line*/
 			if ( inptr != NULL ){
-				fprintf (stderr,"Error: Ambiguous input\n");
+				(void) fprintf (stderr,"Error: Ambiguous input\n");
 				inptrerr = 1;
 				break;
 			}else{
@@ -379,7 +378,7 @@ void parse(){
 		else if ( (strcmp( *(word + i), ">")) == 0 ){
 			/*If outptr not null, we've already seen one > this line*/
 			if ( outptr != NULL ){
-				fprintf (stderr, "Error: too many output files\n");
+				(void) fprintf (stderr, "Error: too many output files\n");
 				outptrerr = 1;
 				break;
 			}else{
@@ -406,14 +405,14 @@ void parse(){
 		}*//*Makes sure & can be used for backgrounding, but not passed as arg*/
 		/*else if ( (strcmp( *(word + i), "&")) == 0 ){
 			/*if ( slashfound ){
-				printf("slashfound");
+				(void) printf("slashfound");
 			}
-			printf("slashfound is: %d\n", slashfound);
+			(void) printf("slashfound is: %d\n", slashfound);
 			lastword = word[i];
 			;
 		}*/else if ( (strcmp( *(word + i), "|")) == 0 ){
 			if ( pipeptr != NULL ){
-				fprintf (stderr,"Error: Too many pipes!\n");
+				(void) fprintf (stderr,"Error: Too many pipes!\n");
 				pipeptrerr = 1;
 				break;
 			}else{
@@ -443,12 +442,9 @@ void parse(){
 				lastword = word[i];
 			}
 			else if( pipecmd != NULL){
-				/*testing to get pipecmd in newargv2[0]*/
-				/*newargv2[newargc2++] = word[i];*/
 				newargv2[newargc2++] = word[i];
 				newargv2[newargc2] = '\0';
 				lastword2 = word[i];
-				/*^^may need to become lastword2 ^^*/
 			}
 		}
 	}
