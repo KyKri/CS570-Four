@@ -200,7 +200,7 @@ int main(){
 				CHK(close(fildes[1]));
 				/*testing lastword2*/
 				if ( (strcmp(lastword2, "&")) == 0 /*background*/ ){
-					(void) printf("%s [%d]\n", newargv[0], kidpid2);
+					(void) printf("%s [%d]\n", newargv2[0], kidpid2);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
@@ -366,7 +366,7 @@ void parse(){
 						(void) fprintf (stderr,"Error! Infile is Null!\n");
 						inptrerr = 1;
 						break;
-					}else if ( word[i+1] == "&" ){
+					}else if ( strcmp(word[i+1], "&") == 0 ){
 						(void) fprintf (stderr,"Error! Infile is Null!\n");
 						inptrerr = 1;
 						break;
@@ -391,7 +391,7 @@ void parse(){
 						outptrerr = 1;
 						break;
 					}
-					if( word[i+1] == "&" ){
+					if( strcmp(word[i+1], "&") == 0 ){
 						(void) fprintf (stderr,"Error! Outfile is Null!\n");
 						outptrerr = 1;
 						break;
