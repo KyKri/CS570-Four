@@ -437,6 +437,11 @@ void parse(){
 			if( firstword == NULL ){
 				firstword = word[i];
 			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
+			if( pipecmd == NULL){
+				newargv[newargc++] = word[i];
+				newargv[newargc] = '\0';
+				lastword = word[i];
+			}
 			else if( pipecmd != NULL){
 				/*testing to get pipecmd in newargv2[0]*/
 				/*newargv2[newargc2++] = word[i];*/
@@ -445,9 +450,6 @@ void parse(){
 				lastword2 = word[i];
 				/*^^may need to become lastword2 ^^*/
 			}
-			newargv[newargc++] = word[i];
-			newargv[newargc] = '\0';
-			lastword = word[i];
 		}
 	}
 	if ( c == EOF){
