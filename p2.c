@@ -435,12 +435,12 @@ void parse(){
 		}else{
 			if( firstword == NULL ){
 				firstword = word[i];
-			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
+			}
 			if( pipecmd == NULL){
 				newargv[newargc++] = word[i];
 				newargv[newargc] = '\0';
 				lastword = word[i];
-			}
+			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
 			else if( pipecmd != NULL){
 				newargv2[newargc2++] = word[i];
 				newargv2[newargc2] = '\0';
