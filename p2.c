@@ -62,7 +62,7 @@ char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 char *newargv2[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 int newargc;
 int newargc2;
-int newargvs[MAXPIPES]; /*stores the index of each pipe's first arg, which
+int newargi[MAXPIPES]; /*stores the index of each pipe's first arg, which
 are all stored in newargv*/
 int numpipes; /*Used to count the number of pipes read per line*/
 
@@ -403,7 +403,7 @@ void parse(){
 			}
 		}
 /********************************* handle pipes ***************************/
-		/*Here we detect pipes and set up newargvs as needed, each new newargv
+		/*Here we detect pipes and set up newargi as needed, each new newargv
 		remains in newargv, but we set an int array to track the pipes first
 		argument*/
 		else if ( (strcmp( *(word + i), "|")) == 0 ){
@@ -417,24 +417,20 @@ void parse(){
 				pipeptrerr = 1;
 			}/*We've got a pipe with at least one arg! track where its arg is in
 			newargv and put a null in newargv in place of the pipe
-			(this separates the different newargvs)*/
+			(this separates the different newargv's)*/
 			else{
 				numpipes ++;
+				newargi[numpipes] = newargc;
+				newargv[newargc++] = NULL;
+				newargv[newargc] = '\0';
 			}
 		}else{
 			if( firstword == NULL ){
 				firstword = word[i];
 			}
-			if( pipecmd == NULL){
-				newargv[newargc++] = word[i];
-				newargv[newargc] = '\0';
-				lastword = word[i];
-			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
-			else if( pipecmd != NULL){
-				newargv2[newargc2++] = word[i];
-				newargv2[newargc2] = '\0';
-				lastword2 = word[i];
-			}
+			newargv[newargc++] = word[i];
+			newargv[newargc] = '\0';
+			lastword = word[i];
 		}
 	}
 	if ( c == EOF){
