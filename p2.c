@@ -25,6 +25,7 @@ John Carroll*/
 #define AMP '&'
 #define BACK '\\'
 #define MAXARGS 20
+#define MAXPIPES 10 /*maximum number of pipes that p2 will allow*/
 
 void prompt();
 void parse();
@@ -58,9 +59,9 @@ int pipearg1 = 0;
 char *nullfile;
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
-int newargc; /*counts number of args sent to children*/
-char *newargv2[(STORAGE * MAXITEM + 1)];
-int newargc2; /*counts number of args sent to children*/
+int newargvs[MAXPIPES]; /*stores the index of each pipe's first arg, which
+are all stored in newargv*/
+int numpipes; /*Used to count the number of pipes read per line*/
 
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
@@ -80,7 +81,7 @@ int main(){
 
 		prompt();
 		parse();
-		if( /* *firstword == EOF */ c == EOF )
+		if( c == EOF )
 			break;
 		if( numwords == 0 )
 			continue;
@@ -88,7 +89,8 @@ int main(){
 			if( firstword == NULL ){
 				(void) fprintf(stderr,"NULL Command not found.\n");
 				continue;
-			}/*handle the cd command*/
+			}
+/*************************** handle cd *************************************/
 			else if( (strcmp(firstword, "cd")) == 0 ){
 				/*Make sure cd has only 1 arg*/
 				if( newargc > 2 ){
@@ -109,7 +111,10 @@ int main(){
 					continue;
 				}
 				continue;
-			}/*make sure no ambiguous redirects/pipes detected*/
+			}
+/*************************** handle environ **********************************/
+
+			/*make sure no ambiguous redirects/pipes detected*/
 			if( inptrerr ){
 				continue;
 			}
@@ -164,15 +169,7 @@ int main(){
 						exit(2);
 					}
 				}
-				/*else{
-					for(;;){
-						pid_t pid;
-						CHK(pid = wait(NULL));
-						if (pid == kidpid1){
-							break;
-						}
-					}
-				}*/
+
 /*******************kid 2***************************/
 				fflush(stdin);
 				fflush(stdout);
@@ -287,22 +284,24 @@ int main(){
 	exit(0);
 }
 
+/******************************** prompt ***********************************/
 /*Issues the prompt "p2: " prompting user for input*/
 void prompt(){
 	(void)printf("p2: ");
 }
 
+/******************************** parse *************************************/
 /*Parse cycles through the input received from stdin by calling
 getword.
 Parse sets flags when metacharacters are encountered.*/
 void parse(){
 	numwords = 0;
 	newargc = 0;
-	newargc2 = 0;
+	/*newargc2 = 0;*/
 	pipearg1 = 0;
 	firstword = NULL;
 	lastword = NULL;
-	lastword2 = NULL;
+	/*lastword2 = NULL;*/
 	inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 	background = 0;
 	*lineptr = (int)&line;
@@ -399,18 +398,7 @@ void parse(){
 					lastword = word[i];
 				}
 			}
-		}/*
-		else if ( (strcmp( *(word + i), "$")) == 0 ){
-			;
-		}*//*Makes sure & can be used for backgrounding, but not passed as arg*/
-		/*else if ( (strcmp( *(word + i), "&")) == 0 ){
-			/*if ( slashfound ){
-				(void) printf("slashfound");
-			}
-			(void) printf("slashfound is: %d\n", slashfound);
-			lastword = word[i];
-			;
-		}*/else if ( (strcmp( *(word + i), "|")) == 0 ){
+		}else if ( (strcmp( *(word + i), "|")) == 0 ){
 			if ( pipeptr != NULL ){
 				(void) fprintf (stderr,"Error: Too many pipes!\n");
 				pipeptrerr = 1;
