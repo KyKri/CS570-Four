@@ -59,6 +59,9 @@ int pipearg1 = 0;
 char *nullfile;
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
+char *newargv2[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
+int newargc;
+int newargc2;
 int newargvs[MAXPIPES]; /*stores the index of each pipe's first arg, which
 are all stored in newargv*/
 int numpipes; /*Used to count the number of pipes read per line*/
@@ -149,7 +152,7 @@ int main(){
 						continue;
 					}
 				}
-/************************kid1********************************/
+/***************************** first pipe *************************************/
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
@@ -170,7 +173,7 @@ int main(){
 					}
 				}
 
-/*******************kid 2***************************/
+/*********************************** last pipe ********************************/
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
@@ -186,7 +189,7 @@ int main(){
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
 					/*testing to give pipe correct args*/
-					if( (execvp(newargv2[0]/*pipecmd*/, newargv2/*newargv+pipearg1*/)) == -1 ){
+					if( (execvp(newargv2[0], newargv2)) == -1 ){
 						(void) printf("kid 2: Command not found.\n");
 						exit(2);
 					}
@@ -398,27 +401,25 @@ void parse(){
 					lastword = word[i];
 				}
 			}
-		}else if ( (strcmp( *(word + i), "|")) == 0 ){
-			if ( pipeptr != NULL ){
-				(void) fprintf (stderr,"Error: Too many pipes!\n");
+		}
+/********************************* handle pipes ***************************/
+		/*Here we detect pipes and set up newargvs as needed, each new newargv
+		remains in newargv, but we set an int array to track the pipes first
+		argument*/
+		else if ( (strcmp( *(word + i), "|")) == 0 ){
+			/*Check to make sure we don't have too many pipes*/
+			if ( numpipes == MAXPIPES ){
+				(void) fprintf (stderr, "Error: Too many pipes!\n");
 				pipeptrerr = 1;
-				break;
-			}else{
-				pipeptr = word[i];
-				lastword = word[i];
-				if( i+1 < MAXITEM ){
-					if( word[i+1] == NULL ){
-						(void) fprintf (stderr,"Error! Pipecmd is Null!\n");
-						pipeptrerr = 1;
-						break;
-					}
-					pipecmd = word[++i];
-					newargv[++newargc] = NULL;
-					newargv2[0] = word[i];
-					newargc2++;
-					pipearg1 = i;
-					lastword = word[i];
-				}
+			}/*Check to make sure the pipe has an arg*/
+			else if ( word[i+1] == NULL ) {
+				(void) fprintf (stderr, "Error: No arg after pipe!\n");
+				pipeptrerr = 1;
+			}/*We've got a pipe with at least one arg! track where its arg is in
+			newargv and put a null in newargv in place of the pipe
+			(this separates the different newargvs)*/
+			else{
+				numpipes ++;
 			}
 		}else{
 			if( firstword == NULL ){
