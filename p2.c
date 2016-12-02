@@ -77,6 +77,7 @@ int main(){
 		inptrerr = 0;
 		outptrerr = 0;
 		pipeptrerr = 0;
+		numpipes = 0;
 
 		int infiledes = NULL;
 		int outfiledes = NULL;
@@ -127,7 +128,8 @@ int main(){
 			if( pipeptrerr ){
 				continue;
 			}
-			if( pipeptr != NULL) {
+/**************************** handle pipe ***********************************/
+			if( numpipes > 0 ) {
 				int pipeopenerr;
 				int fildes[2];
 				pid_t kidpid1, kidpid2;
@@ -188,8 +190,7 @@ int main(){
 					}
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
-					/*testing to give pipe correct args*/
-					if( (execvp(newargv2[0], newargv2)) == -1 ){
+					if( (execvp(newargv[newargi[0]], (newargv+newargi[0]) )) == -1 ){
 						(void) printf("kid 2: Command not found.\n");
 						exit(2);
 					}
@@ -197,9 +198,8 @@ int main(){
 				/*else{*/
 				CHK(close(fildes[0]));
 				CHK(close(fildes[1]));
-				/*testing lastword2*/
-				if ( (strcmp(lastword2, "&")) == 0 /*background*/ ){
-					(void) printf("%s [%d]\n", newargv2[0], kidpid2);
+				if ( (strcmp(lastword, "&")) == 0 ){
+					(void) printf("%s [%d]\n", newargv[newargi[0]], kidpid2);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
@@ -300,6 +300,7 @@ Parse sets flags when metacharacters are encountered.*/
 void parse(){
 	numwords = 0;
 	newargc = 0;
+	numpipes = 0;
 	/*newargc2 = 0;*/
 	pipearg1 = 0;
 	firstword = NULL;
@@ -419,10 +420,10 @@ void parse(){
 			newargv and put a null in newargv in place of the pipe
 			(this separates the different newargv's)*/
 			else{
-				numpipes ++;
-				newargi[numpipes] = newargc;
-				newargv[newargc++] = NULL;
-				newargv[newargc] = '\0';
+				newargi[numpipes] = newargc+1;
+				newargv[newargc] = NULL;
+				newargv[++newargc] = '\0';
+				numpipes++;
 			}
 		}else{
 			if( firstword == NULL ){
