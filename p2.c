@@ -434,6 +434,15 @@ void parse(){
 			lastword = word[i];
 		}
 	}
+	if ( c == EOF){
+		;
+	}
+	if (newargv[newargc-1] == NULL){
+		;
+	}
+	else if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
+		newargv[--newargc] = NULL;
+	}
 }
 
 /*catches the SIGTERM signal to avoid killing p2*/
