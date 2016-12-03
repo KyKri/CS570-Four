@@ -30,7 +30,7 @@ int getword(char *w){
 	/*dllrfrst is set when DLLR is read, every return numletter
 	checks to see if dllrfrst is set, if it is, negate numletters*/
 	int curchar = 0, numletters = 0, dllrfrst = 0;
-	slashfound = -1;
+	slashfound = 0;
 
 	while ( (curchar = getchar()) != EOF ){
 		/*Not processing word, newline entered - null terminate
@@ -73,7 +73,8 @@ int getword(char *w){
 				*w++ = curchar;
 				*w = '\0';
 				numletters++;
-				slashfound = numletters-1;
+				/*indicate that a backslash was found in this word*/
+				slashfound = 1;
 			}
 		}
 		/*metachar is a word by itself*/
