@@ -437,6 +437,10 @@ void parse(){
 			else if ( word[i+1] == NULL ) {
 				(void) fprintf (stderr, "Error: No arg after pipe!\n");
 				pipeptrerr = 1;
+			}
+			else if ( strcmp(word[i+1], "&") == 0 ) {
+				(void) fprintf (stderr, "Error: No arg after pipe!\n");
+				pipeptrerr = 1;
 			}/*We've got a pipe with at least one arg! track where its arg is in
 			newargv and put a null in newargv in place of the pipe
 			(this separates the different newargv's)*/
