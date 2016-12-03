@@ -114,8 +114,11 @@ int main(){
 				continue;
 			}
 /*************************** handle environ **********************************/
-
-			/*make sure no ambiguous redirects/pipes detected*/
+			else if ( (strcmp(firstword, "environ")) == 0 ){
+				(void) printf("first word environ\n");
+				continue;
+			}
+/****************make sure no ambiguous redirects/pipes detected**************/
 			if( inptrerr ){
 				continue;
 			}
