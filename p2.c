@@ -430,6 +430,9 @@ void parse(){
 	if ( c == EOF){
 		;
 	}
+	/*Make sure that & does not get left on the end of newargv,
+	if its on the end it is used for backgrounding and should
+	not be added*/
 	if (newargv[newargc-1] == NULL){
 		;
 	}
