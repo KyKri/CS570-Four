@@ -30,14 +30,13 @@ John Carroll*/
 void prompt();
 void parse();
 void sighandler();
+void cleararray (char *[]);
 
 int c; /*Number chars per word*/
 int numwords; /*Number of words from input line*/
 char s[STORAGE]; /*Used to store each word from input*/
 char *firstword; /*Points to first word read from input*/
 char *lastword; /*Points to last word read from input*/
-char *lastword2; /*Points to last word read from input for pipecmd*/
-int background; /*set if & is lastword, used to background process*/
 
 /*Storage * Maxitem because each word is a max size of storage and
 each line has a max word count of maxtitem therefore, the biggest
@@ -53,15 +52,12 @@ char *outptr; /*points to an output redirect received in input line*/
 int outptrerr = 0; /*flag if ambiguous output detected*/
 char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
-char *pipecmd; /*points to a command following a pipe*/
 int pipeptrerr = 0; /*flag if more than one | detected*/
-int pipearg1 = 0;
 char *nullfile;
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 char *newargv2[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 int newargc;
-int newargc2;
 int newargi[MAXPIPES]; /*stores the index of each pipe's first arg, which
 are all stored in newargv*/
 int numpipes; /*Used to count the number of pipes read per line*/
@@ -85,6 +81,7 @@ int main(){
 
 		prompt();
 		parse();
+		cleararray(word);
 		if( c == EOF )
 			break;
 		if( numwords == 0 )
@@ -265,7 +262,7 @@ int main(){
 				}
 			}else{
 				/*background handler - dont wait for child*/
-				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
+				if ( (strcmp(lastword, "&")) == 0 ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
 					/*background /dev/null here?*/
 					continue;
@@ -301,13 +298,9 @@ void parse(){
 	numwords = 0;
 	newargc = 0;
 	numpipes = 0;
-	/*newargc2 = 0;*/
-	pipearg1 = 0;
 	firstword = NULL;
 	lastword = NULL;
-	/*lastword2 = NULL;*/
-	inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
-	background = 0;
+	inptr = infile = outfile = outptr = pipeptr = NULL;
 	*lineptr = (int)&line;
 	int founddllr = 0;
 	/*this loop adds words to the line buffer until c is EOF
@@ -448,4 +441,14 @@ void parse(){
 /*catches the SIGTERM signal to avoid killing p2*/
 void sighandler(){
 	;
+}
+
+/*!!!Note!!! specialized code! Do not reuse as is!
+Sets all of the pointers from ptrrarray to null
+This is ONLY used on the word array for this program*/
+void cleararray (char *ptrarray[]){
+    int i;
+    for ( i = 0; i < numwords; i++ ){
+        ptrarray[i] = '\0';
+    }
 }
