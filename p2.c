@@ -133,7 +133,13 @@ int main(){
 				}/*We have 2 args, make sure the environment variable exists
 				try to assign new value*/
 				else{
-					;
+					if ( getenv(newargv[newargc-2]) == NULL ){
+						(void) printf("\n");
+					}else{
+						if ( (setenv(newargv[newargc-2], newargv[newargc-1], 1)) == -1 ){
+							(void) fprintf(stderr,"failed to assign env var\n");
+						}
+					}
 				}
 				continue;
 			}
