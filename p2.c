@@ -190,7 +190,7 @@ int main(){
 					}
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
-					if( (execvp(newargv[newargi[0]], (newargv+newargi[0]) )) == -1 ){
+					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
 						(void) printf("kid 2: Command not found.\n");
 						exit(2);
 					}
@@ -199,7 +199,7 @@ int main(){
 				CHK(close(fildes[0]));
 				CHK(close(fildes[1]));
 				if ( (strcmp(lastword, "&")) == 0 ){
-					(void) printf("%s [%d]\n", newargv[newargi[0]], kidpid2);
+					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpid2);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
