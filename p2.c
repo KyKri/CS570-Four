@@ -114,8 +114,27 @@ int main(){
 				continue;
 			}
 /*************************** handle environ **********************************/
+			/*environ allows for reading environment variables when given
+			one argument and allows for setting environment variables when
+			given two arguments, fails if given no args or 3+ args*/
 			else if ( (strcmp(firstword, "environ")) == 0 ){
-				(void) printf("first word environ\n");
+				if ( newargc < 2 ){
+					(void) fprintf(stderr,"environ needs at least 1 arg\n");
+				}else if ( newargc > 3 ){
+					(void) fprintf(stderr,"environ handles only 1 or 2 args\n");
+				}/*We have one arg, try to read its value and print,
+				print nothng if not found*/
+				else if ( newargc == 2 ){
+					if ( getenv(newargv[newargc-1]) == NULL ){
+						(void) printf("\n");
+					}else{
+						(void) printf("%s\n", getenv(newargv[newargc-1]));
+					}
+				}/*We have 2 args, make sure the environment variable exists
+				try to assign new value*/
+				else{
+					;
+				}
 				continue;
 			}
 /****************make sure no ambiguous redirects/pipes detected**************/
