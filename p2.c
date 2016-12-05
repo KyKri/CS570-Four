@@ -135,15 +135,10 @@ int main(){
 					}else{
 						(void) printf("%s\n", getenv(newargv[newargc-1]));
 					}
-				}/*We have 2 args, make sure the environment variable exists
-				try to assign new value*/
+				}/*We have 2 args try to assign new value*/
 				else{
-					if ( getenv(newargv[newargc-2]) == NULL ){
-						(void) printf("\n");
-					}else{
-						if ( (setenv(newargv[newargc-2], newargv[newargc-1], 1)) == -1 ){
-							(void) fprintf(stderr,"failed to assign env var\n");
-						}
+					if ( (setenv(newargv[newargc-2], newargv[newargc-1], 1)) == -1 ){
+						(void) fprintf(stderr,"failed to assign env var\n");
 					}
 				}
 				continue;
@@ -200,7 +195,7 @@ int main(){
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
 					if( (execvp(newargv[0], newargv)) == -1 ){
-						(void) printf("kid1: Command not found.\n");
+						(void) fprintf(stderr,"kid1: Command not found.\n");
 						exit(2);
 					}
 				}
@@ -221,7 +216,7 @@ int main(){
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
 					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
-						(void) printf("kid 2: Command not found.\n");
+						(void) fprintf(stderr,"kid 2: Command not found.\n");
 						exit(2);
 					}
 				}
@@ -290,7 +285,7 @@ int main(){
 					CHK(close(nullinput));
 				}
 				if( (execvp(newargv[0], newargv)) == -1 ){
-					(void) printf("Command not found.\n");
+					(void) fprintf(stderr,"Command not found.\n");
 					exit(2);
 				}
 			}else{
