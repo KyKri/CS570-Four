@@ -156,8 +156,8 @@ int main(){
 /**************************** handle pipe ***********************************/
 			if( numpipes > 0 ) {
 				int pipeopenerr;
-				int fildes[2];
-				pid_t kidpid1, kidpid2;
+				int fildes[numpipes+1];
+				pid_t kidpids[numpipes+1];
 
 				if( (pipeopenerr = (pipe(fildes))) == -1 ){
 					perror("Pipe failed!");
@@ -183,10 +183,10 @@ int main(){
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
-				if( (kidpid1 = fork()) == -1 ){
+				if( (kidpids[0] = fork()) == -1 ){
 					perror("Unable to fork.\n");
 					exit (1);
-				}else if( kidpid1 == 0 ){
+				}else if( kidpids[0] == 0 ){
 					CHK(dup2(fildes[1], STDOUT_FILENO));
 					if( infiledes != NULL ){
 						dup2(infiledes, STDIN_FILENO);
@@ -204,10 +204,10 @@ int main(){
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
-				if( (kidpid2 = fork()) == -1 ){
+				if( (kidpids[numpipes] = fork()) == -1 ){
 					perror("Unable to fork.\n");
 					exit (1);
-				}else if( kidpid2 == 0 ){
+				}else if( kidpids[numpipes] == 0 ){
 					CHK(dup2(fildes[0], STDIN_FILENO));
 					if( outfiledes != NULL ){
 						dup2(outfiledes, STDOUT_FILENO);
@@ -224,14 +224,14 @@ int main(){
 				CHK(close(fildes[0]));
 				CHK(close(fildes[1]));
 				if ( (strcmp(lastword, "&")) == 0 ){
-					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpid2);
+					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpids[numpipes]);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
 					for(;;){
 						pid_t pid;
 						CHK(pid = wait(NULL));
-						if (pid == kidpid2){
+						if (pid == kidpids[numpipes]){
 							break;
 						}
 					}
