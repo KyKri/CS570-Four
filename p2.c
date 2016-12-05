@@ -156,7 +156,7 @@ int main(){
 /**************************** handle pipe ***********************************/
 			if( numpipes > 0 ) {
 				int pipeopenerr;
-				int fildes[numpipes+1];
+				int fildes[numpipes*2];
 				pid_t kidpids[numpipes+1];
 
 				if( (pipeopenerr = (pipe(fildes))) == -1 ){
@@ -262,7 +262,6 @@ int main(){
 					continue;
 				}
 			}
-			fflush(stdin);
 			fflush(stdout);
 			fflush(stderr);
 			int kidpid;
