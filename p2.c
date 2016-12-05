@@ -54,6 +54,7 @@ char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
 int pipeptrerr = 0; /*flag if more than one | detected*/
 char *nullfile;
+int dllrworderr = 0; /*Used for errors with invalid environment variables*/
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 char *newargv2[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
@@ -86,6 +87,10 @@ int main(){
 			break;
 		if( numwords == 0 )
 			continue;
+			/*If a word starting with $ wasn't a valid env var,
+			we don't want to fork a child*/
+		else if (dllrworderr)
+			continue;
 		else{
 			if( firstword == NULL ){
 				(void) fprintf(stderr,"NULL Command not found.\n");
@@ -114,8 +119,36 @@ int main(){
 				continue;
 			}
 /*************************** handle environ **********************************/
-
-			/*make sure no ambiguous redirects/pipes detected*/
+			/*environ allows for reading environment variables when given
+			one argument and allows for setting environment variables when
+			given two arguments, fails if given no args or 3+ args*/
+			else if ( (strcmp(firstword, "environ")) == 0 ){
+				if ( newargc < 2 ){
+					(void) fprintf(stderr,"environ needs at least 1 arg\n");
+				}else if ( newargc > 3 ){
+					(void) fprintf(stderr,"environ handles only 1 or 2 args\n");
+				}/*We have one arg, try to read its value and print,
+				print nothng if not found*/
+				else if ( newargc == 2 ){
+					if ( getenv(newargv[newargc-1]) == NULL ){
+						(void) printf("\n");
+					}else{
+						(void) printf("%s\n", getenv(newargv[newargc-1]));
+					}
+				}/*We have 2 args, make sure the environment variable exists
+				try to assign new value*/
+				else{
+					if ( getenv(newargv[newargc-2]) == NULL ){
+						(void) printf("\n");
+					}else{
+						if ( (setenv(newargv[newargc-2], newargv[newargc-1], 1)) == -1 ){
+							(void) fprintf(stderr,"failed to assign env var\n");
+						}
+					}
+				}
+				continue;
+			}
+/****************make sure no ambiguous redirects/pipes detected**************/
 			if( inptrerr ){
 				continue;
 			}
@@ -303,6 +336,7 @@ void parse(){
 	inptr = infile = outfile = outptr = pipeptr = NULL;
 	*lineptr = (int)&line;
 	int founddllr = 0;
+	dllrworderr = 0;
 	/*this loop adds words to the line buffer until c is EOF
 	or 0 (meaning getword hit s newline)*/
 	for(;;){
@@ -329,9 +363,36 @@ void parse(){
 				(void) fprintf(stderr,"Too many args.\n");
 				break;
 			}
+			/*Checking for word starting with $ (getword returns negative
+			word count for words starting with $)*/
+			if ( c < -1){
+				/*check to make sure environment variable exists, s is used
+				because we don't want to add a bad env var to newargv. s
+				marks the $, so s+1 gives the actual variable starting char*/
+				if ( getenv(s+1) == NULL ){
+					(void) fprintf(stderr, "Environment Variable doesn't exist.\n");
+					dllrworderr = 1;
+					break;
+				}/*If the env var exists, copy it in place of the $word we found
+				then count to find it's length and store that in c. c is used
+				below to add items to the word array*/
+				else{
+					strncpy(s, getenv(s+1), sizeof(s)-1);
+					int i;
+					int j = 0;
+					for (i = 0; i < sizeof(s)/sizeof(s[0]); i++){
+						if( s[i] != '\0' ){
+							j++;
+						}
+					}
+					c = j;
+				}
+			}
 			/*Create a pointer to first char of each word per line*/
 			*(word + numwords) = lineptr;
 			int i;
+			/*Add all of the characters of the word in the s array
+			to the line array*/
 			for( i=0; i<c; i++){
 				*lineptr++ = s[i];
 				*lineptr = '\0';
@@ -346,6 +407,10 @@ void parse(){
 	it also does error checking*/
 	int i;
 	for ( i=0; i < numwords; i++){
+		/*If a word starting with $ wasn't a valid env var,
+		we don't want to continue parsing*/
+		if (dllrworderr)
+			break;
 		/*handle input redirection*/
 		if ( (strcmp( word[i], "<")) == 0 ){
 			/*If inptr not null, we've already seen one < this line*/
@@ -407,6 +472,10 @@ void parse(){
 				pipeptrerr = 1;
 			}/*Check to make sure the pipe has an arg*/
 			else if ( word[i+1] == NULL ) {
+				(void) fprintf (stderr, "Error: No arg after pipe!\n");
+				pipeptrerr = 1;
+			}
+			else if ( strcmp(word[i+1], "&") == 0 ) {
 				(void) fprintf (stderr, "Error: No arg after pipe!\n");
 				pipeptrerr = 1;
 			}/*We've got a pipe with at least one arg! track where its arg is in
