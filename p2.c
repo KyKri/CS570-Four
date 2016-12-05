@@ -54,6 +54,7 @@ char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
 int pipeptrerr = 0; /*flag if more than one | detected*/
 char *nullfile;
+int dllrworderr = 0; /*Used for errors with invalid environment variables*/
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 char *newargv2[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
@@ -85,6 +86,10 @@ int main(){
 		if( c == EOF )
 			break;
 		if( numwords == 0 )
+			continue;
+			/*If a word starting with $ wasn't a valid env var,
+			we don't want to fork a child*/
+		else if (dllrworderr)
 			continue;
 		else{
 			if( firstword == NULL ){
@@ -331,6 +336,7 @@ void parse(){
 	inptr = infile = outfile = outptr = pipeptr = NULL;
 	*lineptr = (int)&line;
 	int founddllr = 0;
+	dllrworderr = 0;
 	/*this loop adds words to the line buffer until c is EOF
 	or 0 (meaning getword hit s newline)*/
 	for(;;){
@@ -357,9 +363,36 @@ void parse(){
 				(void) fprintf(stderr,"Too many args.\n");
 				break;
 			}
+			/*Checking for word starting with $ (getword returns negative
+			word count for words starting with $)*/
+			if ( c < -1){
+				/*check to make sure environment variable exists, s is used
+				because we don't want to add a bad env var to newargv. s
+				marks the $, so s+1 gives the actual variable starting char*/
+				if ( getenv(s+1) == NULL ){
+					(void) fprintf(stderr, "Environment Variable doesn't exist.\n");
+					dllrworderr = 1;
+					break;
+				}/*If the env var exists, copy it in place of the $word we found
+				then count to find it's length and store that in c. c is used
+				below to add items to the word array*/
+				else{
+					strncpy(s, getenv(s+1), sizeof(s)-1);
+					int i;
+					int j = 0;
+					for (i = 0; i < sizeof(s)/sizeof(s[0]); i++){
+						if( s[i] != '\0' ){
+							j++;
+						}
+					}
+					c = j;
+				}
+			}
 			/*Create a pointer to first char of each word per line*/
 			*(word + numwords) = lineptr;
 			int i;
+			/*Add all of the characters of the word in the s array
+			to the line array*/
 			for( i=0; i<c; i++){
 				*lineptr++ = s[i];
 				*lineptr = '\0';
@@ -374,6 +407,10 @@ void parse(){
 	it also does error checking*/
 	int i;
 	for ( i=0; i < numwords; i++){
+		/*If a word starting with $ wasn't a valid env var,
+		we don't want to continue parsing*/
+		if (dllrworderr)
+			break;
 		/*handle input redirection*/
 		if ( (strcmp( word[i], "<")) == 0 ){
 			/*If inptr not null, we've already seen one < this line*/
