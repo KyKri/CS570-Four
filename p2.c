@@ -180,7 +180,6 @@ int main(){
 					}
 				}
 /***************************** first pipe *************************************/
-				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
 				if( (kidpids[0] = fork()) == -1 ){
@@ -201,7 +200,6 @@ int main(){
 				}
 
 /*********************************** last pipe ********************************/
-				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
 				if( (kidpids[numpipes] = fork()) == -1 ){
