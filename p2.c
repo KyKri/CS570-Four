@@ -31,6 +31,7 @@ void prompt();
 void parse();
 void sighandler();
 void cleararray (char *[]);
+void closefildes (int [], int);
 
 int c; /*Number chars per word*/
 int numwords; /*Number of words from input line*/
@@ -190,15 +191,20 @@ int main(){
 					if( infiledes != NULL ){
 						dup2(infiledes, STDIN_FILENO);
 						CHK(close(infiledes));
-					}
-					CHK(close(fildes[0]));
-					CHK(close(fildes[1]));
+					}/*TESTING - closefildes function*/
+					/*CHK(close(fildes[0]));
+					CHK(close(fildes[1]));*/
+					closefildes(fildes, numpipes+1);
 					if( (execvp(newargv[0], newargv)) == -1 ){
 						(void) fprintf(stderr,"kid1: Command not found.\n");
 						exit(2);
 					}
 				}
 
+				int i;
+				for ( i = 1; i < numpipes; i++){
+					;
+				}
 /*********************************** last pipe ********************************/
 				fflush(stdout);
 				fflush(stderr);
@@ -210,17 +216,20 @@ int main(){
 					if( outfiledes != NULL ){
 						dup2(outfiledes, STDOUT_FILENO);
 						CHK(close(outfiledes));
-					}
-					CHK(close(fildes[0]));
-					CHK(close(fildes[1]));
+					}/*TESTING - closefildes function*/
+					/*CHK(close(fildes[0]));
+					CHK(close(fildes[1]));*/
+					closefildes(fildes, numpipes+1);
 					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
 						(void) fprintf(stderr,"kid 2: Command not found.\n");
 						exit(2);
 					}
 				}
 				/*else{*/
-				CHK(close(fildes[0]));
-				CHK(close(fildes[1]));
+				/*TESTING - closefildes function*/
+				/*CHK(close(fildes[0]));
+				CHK(close(fildes[1]));*/
+				closefildes(fildes, numpipes+1);
 				if ( (strcmp(lastword, "&")) == 0 ){
 					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpids[numpipes]);
 					/*background /dev/null here?*/
@@ -514,5 +523,12 @@ void cleararray (char *ptrarray[]){
     int i;
     for ( i = 0; i < numwords; i++ ){
         ptrarray[i] = '\0';
+    }
+}
+
+void closefildes (int fildesarray[], int numelms){
+    int i = 0;
+    for (i = 0; i < numelms; i++){
+        CHK(close(fildesarray[i]));
     }
 }
