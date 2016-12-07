@@ -391,8 +391,10 @@ void parse(){
 				if ( getenv(s+1) == NULL ){
 					(void) fprintf(stderr, "Environment Variable doesn't exist.\n");
 					dllrworderr = 1;
-					break;
-				}/*If the env var exists, copy it in place of the $word we found
+					/*break; *//*Was in originally, taken out in testing,
+					doesn't appear to break anything*/
+				}
+				/*If the env var exists, copy it in place of the $word we found
 				then count to find it's length and store that in c. c is used
 				below to add items to the word array*/
 				else{
