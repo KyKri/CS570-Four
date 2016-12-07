@@ -159,10 +159,14 @@ int main(){
 				int pipeopenerr;
 				int fildes[numpipes*2];
 				pid_t kidpids[numpipes+1];
-
-				if( (pipeopenerr = (pipe(fildes))) == -1 ){
-					perror("Pipe failed!");
-					exit(3);
+				/*TO-DO make pipe loop that opens
+				all pipes individually ie fildes[0] and [1] then [2] and [3]*/
+				int j;
+				for ( j = 0; j < numpipes*2 ; j+=2 ){
+					if( (pipeopenerr = (pipe(fildes+j))) == -1 ){
+						perror("Pipe failed!");
+						exit(3);
+					}
 				}
 				/*Check for an infile, try to open*/
 				if( infile != NULL ){
@@ -194,16 +198,29 @@ int main(){
 					}/*TESTING - closefildes function*/
 					/*CHK(close(fildes[0]));
 					CHK(close(fildes[1]));*/
-					closefildes(fildes, numpipes+1);
+					closefildes(fildes, numpipes*2);
 					if( (execvp(newargv[0], newargv)) == -1 ){
 						(void) fprintf(stderr,"kid1: Command not found.\n");
 						exit(2);
 					}
 				}
-
+/*************************** handle multiple pipes ****************************/
 				int i;
 				for ( i = 1; i < numpipes; i++){
-					;
+					fflush(stdout);
+					fflush(stderr);
+					if( (kidpids[i] = fork()) == -1 ){
+						perror("Unable to fork.\n");
+						exit (1);
+					}else if (kidpids[i] == 0){
+						CHK(dup2(fildes[2*i-2], STDIN_FILENO));
+						CHK(dup2(fildes[2*i+1], STDOUT_FILENO));
+						closefildes(fildes, numpipes*2);
+						if( (execvp(newargv[newargi[i]], (newargv+newargi[i]))) == -1 ){
+							(void) fprintf(stderr,"kid%d: Command not found.\n",i);
+							exit(2);
+						}
+					}
 				}
 /*********************************** last pipe ********************************/
 				fflush(stdout);
@@ -212,14 +229,15 @@ int main(){
 					perror("Unable to fork.\n");
 					exit (1);
 				}else if( kidpids[numpipes] == 0 ){
-					CHK(dup2(fildes[0], STDIN_FILENO));
+					/*TESTING*/
+					CHK(dup2(fildes[2*numpipes-2], STDIN_FILENO));
 					if( outfiledes != NULL ){
 						dup2(outfiledes, STDOUT_FILENO);
 						CHK(close(outfiledes));
 					}/*TESTING - closefildes function*/
 					/*CHK(close(fildes[0]));
 					CHK(close(fildes[1]));*/
-					closefildes(fildes, numpipes+1);
+					closefildes(fildes, numpipes*2);
 					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
 						(void) fprintf(stderr,"kid 2: Command not found.\n");
 						exit(2);
@@ -229,7 +247,7 @@ int main(){
 				/*TESTING - closefildes function*/
 				/*CHK(close(fildes[0]));
 				CHK(close(fildes[1]));*/
-				closefildes(fildes, numpipes+1);
+				closefildes(fildes, numpipes*2);
 				if ( (strcmp(lastword, "&")) == 0 ){
 					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpids[numpipes]);
 					/*background /dev/null here?*/
