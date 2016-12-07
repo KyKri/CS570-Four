@@ -189,7 +189,7 @@ int main(){
 				fflush(stderr);
 				if( (kidpids[0] = fork()) == -1 ){
 					perror("Unable to fork.\n");
-					exit (1);
+					_exit (1);
 				}else if( kidpids[0] == 0 ){
 					CHK(dup2(fildes[1], STDOUT_FILENO));
 					if( infiledes != NULL ){
@@ -211,7 +211,7 @@ int main(){
 					fflush(stderr);
 					if( (kidpids[i] = fork()) == -1 ){
 						perror("Unable to fork.\n");
-						exit (1);
+						_exit (1);
 					}else if (kidpids[i] == 0){
 						CHK(dup2(fildes[2*i-2], STDIN_FILENO));
 						CHK(dup2(fildes[2*i+1], STDOUT_FILENO));
@@ -227,7 +227,7 @@ int main(){
 				fflush(stderr);
 				if( (kidpids[numpipes] = fork()) == -1 ){
 					perror("Unable to fork.\n");
-					exit (1);
+					_exit (1);
 				}else if( kidpids[numpipes] == 0 ){
 					/*TESTING*/
 					CHK(dup2(fildes[2*numpipes-2], STDIN_FILENO));
@@ -294,7 +294,7 @@ int main(){
 			int kidpid;
 			if( (kidpid = fork()) == -1 ){
 				perror("Unable to fork.\n");
-				exit (1);
+				_exit (1);
 			}else if( kidpid == 0 ){
 				if( infiledes != NULL ){
 					dup2(infiledes, STDIN_FILENO);
