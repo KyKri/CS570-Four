@@ -216,6 +216,8 @@ int main(){
 						CHK(dup2(fildes[2*i-2], STDIN_FILENO));
 						CHK(dup2(fildes[2*i+1], STDOUT_FILENO));
 						closefildes(fildes, numpipes*2);
+						//(void) printf ("I'm child %d\n", i);
+						//(void) printf ("newargv[newargi[%d]]: %s\n",i,newargv[newargi[i]]);
 						if( (execvp(newargv[newargi[i]], (newargv+newargi[i]))) == -1 ){
 							(void) fprintf(stderr,"kid%d: Command not found.\n",i);
 							_exit(2);
@@ -229,7 +231,8 @@ int main(){
 					perror("Unable to fork.\n");
 					_exit (1);
 				}else if( kidpids[numpipes] == 0 ){
-					/*TESTING*/
+					/*TESTING - after newargv and numpipes wac chnaged*/
+					//CHK(dup2(fildes[2*numpipes-2], STDIN_FILENO));
 					CHK(dup2(fildes[2*numpipes-2], STDIN_FILENO));
 					if( outfiledes != NULL ){
 						dup2(outfiledes, STDOUT_FILENO);
@@ -238,8 +241,11 @@ int main(){
 					/*CHK(close(fildes[0]));
 					CHK(close(fildes[1]));*/
 					closefildes(fildes, numpipes*2);
-					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
-						(void) fprintf(stderr,"kid 2: Command not found.\n");
+					/*TESTING made changes to newargv, numpipes-1 might be off
+					by one error now...*/
+					//if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
+					if( (execvp(newargv[newargi[numpipes]], (newargv+newargi[numpipes]) )) == -1 ){
+						(void) fprintf(stderr,"last kid: Command not found.\n");
 						_exit(2);
 					}
 				}
@@ -249,7 +255,10 @@ int main(){
 				CHK(close(fildes[1]));*/
 				closefildes(fildes, numpipes*2);
 				if ( (strcmp(lastword, "&")) == 0 ){
-					(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpids[numpipes]);
+					/*TESTING made changes to newargv, numpipes-1 might be off
+					by one error now...*/
+					//(void) printf("%s [%d]\n", newargv[newargi[numpipes-1]], kidpids[numpipes]);
+					(void) printf("%s [%d]\n", newargv[newargi[numpipes]], kidpids[numpipes]);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
@@ -503,10 +512,10 @@ void parse(){
 			newargv and put a null in newargv in place of the pipe
 			(this separates the different newargv's)*/
 			else{
-				newargi[numpipes] = newargc+1;
+				newargi[++numpipes] = newargc+1;
 				newargv[newargc] = NULL;
 				newargv[++newargc] = '\0';
-				numpipes++;
+				//numpipes++;
 			}
 		}else{
 			if( firstword == NULL ){
