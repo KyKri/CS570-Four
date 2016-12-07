@@ -165,7 +165,7 @@ int main(){
 				for ( j = 0; j < numpipes*2 ; j+=2 ){
 					if( (pipeopenerr = (pipe(fildes+j))) == -1 ){
 						perror("Pipe failed!");
-						exit(3);
+						_exit(3);
 					}
 				}
 				/*Check for an infile, try to open*/
@@ -201,7 +201,7 @@ int main(){
 					closefildes(fildes, numpipes*2);
 					if( (execvp(newargv[0], newargv)) == -1 ){
 						(void) fprintf(stderr,"kid1: Command not found.\n");
-						exit(2);
+						_exit(2);
 					}
 				}
 /*************************** handle multiple pipes ****************************/
@@ -218,7 +218,7 @@ int main(){
 						closefildes(fildes, numpipes*2);
 						if( (execvp(newargv[newargi[i]], (newargv+newargi[i]))) == -1 ){
 							(void) fprintf(stderr,"kid%d: Command not found.\n",i);
-							exit(2);
+							_exit(2);
 						}
 					}
 				}
@@ -240,7 +240,7 @@ int main(){
 					closefildes(fildes, numpipes*2);
 					if( (execvp(newargv[newargi[numpipes-1]], (newargv+newargi[numpipes-1]) )) == -1 ){
 						(void) fprintf(stderr,"kid 2: Command not found.\n");
-						exit(2);
+						_exit(2);
 					}
 				}
 				/*else{*/
@@ -310,7 +310,7 @@ int main(){
 				}
 				if( (execvp(newargv[0], newargv)) == -1 ){
 					(void) fprintf(stderr,"Command not found.\n");
-					exit(2);
+					_exit(2);
 				}
 			}else{
 				/*background handler - dont wait for child*/
@@ -333,7 +333,7 @@ int main(){
 	}
 	killpg(getpid(), SIGTERM);
 	(void) printf("p2 terminated.\n");
-	exit(0);
+	_exit(0);
 }
 
 /******************************** prompt ***********************************/
