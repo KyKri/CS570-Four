@@ -84,6 +84,8 @@ int main(){
 		prompt();
 		parse();
 		cleararray(word);
+		/*TESTING - premature exit on unexpected EOF - put eof catch at
+		bottom of for loop*/
 		if( c == EOF )
 			break;
 		if( numwords == 0 )
@@ -339,6 +341,9 @@ int main(){
 				}
 			}
 		}
+		/*Seems to fix prmeature exit on EOF being read*/
+		/*if( c == EOF )
+			break;*/
 	}
 	killpg(getpid(), SIGTERM);
 	(void) printf("p2 terminated.\n");
@@ -480,9 +485,14 @@ void parse(){
 						(void) fprintf (stderr,"Error! Outfile is Null!\n");
 						outptrerr = 1;
 						break;
-					}
+					}/*This would be an error since & is used for backgrounding*/
 					if( strcmp(word[i+1], "&") == 0 ){
-						(void) fprintf (stderr,"Error! Outfile is Null!\n");
+						(void) fprintf (stderr,"Error! Outfile cannot be &!\n");
+						outptrerr = 1;
+						break;
+					}/*This is an error, as it would be a normal shell*/
+					else if ( strcmp(word[i+1], ">") == 0 ){
+						(void) fprintf (stderr,"Error! Outfile cannot be >!\n");
 						outptrerr = 1;
 						break;
 					}
