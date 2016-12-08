@@ -347,7 +347,7 @@ int main(){
 	}
 	killpg(getpid(), SIGTERM);
 	(void) printf("p2 terminated.\n");
-	_exit(0);
+	exit(0);
 }
 
 /******************************** prompt ***********************************/
